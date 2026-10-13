@@ -18,6 +18,12 @@ BarPopupButton {
 
     property var screen
 
+    // Start every opening with an empty search.
+    onPopupVisibleChanged: {
+        if (!popupVisible)
+            searchField.text = ""
+    }
+
     Row {
         anchors.centerIn: parent
         spacing: 0
