@@ -72,7 +72,7 @@ Scope {
                 }
 
                 RowLayout {
-                    Wifi {
+                    Connectivity {
                         Layout.fillHeight: true
                     }
                     Brightness {
