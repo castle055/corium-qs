@@ -85,7 +85,8 @@ BarPopupButton {
                     border.width: 1
                 }
 
-                onTextChanged: applicationsGrid.positionViewAtBeginning()
+                // Results start right under the field, above the on-screen keyboard.
+                onTextChanged: applicationsScroll.contentItem.contentY = 0
             }
 
             //PersistentProperties {
@@ -153,6 +154,11 @@ BarPopupButton {
                 }
 
                 ScrollView {
+                    id: applicationsScroll
+
+                    // While searching, only the matches are shown.
+                    readonly property bool searching: searchField.text.trim() !== ""
+
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
@@ -164,6 +170,7 @@ BarPopupButton {
                         Column {
                             width: parent.width
                             spacing: 16
+                            visible: !applicationsScroll.searching
 
                             Text {
                                 text: "Favorites"
@@ -258,6 +265,7 @@ BarPopupButton {
                         Column {
                             width: parent.width
                             spacing: 16
+                            visible: !applicationsScroll.searching
 
                             Text {
                                 text: "Recent"
@@ -354,7 +362,9 @@ BarPopupButton {
                             spacing: 16
 
                             Text {
-                                text: "All Applications"
+                                text: applicationsScroll.searching
+                                      ? (filteredApplications.values.length > 0 ? "Results" : "No applications found")
+                                      : "All Applications"
 
                                 color: "white"
                                 font.pixelSize: 24
