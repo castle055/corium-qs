@@ -14,10 +14,12 @@ PanelWindow {
     property real radius: 28
     property bool leftSide: false
     property bool fullHeight: false
+    // Let text fields inside the popup take keyboard focus when clicked.
+    property bool keyboardFocus: false
 
     WlrLayershell.layer: WlrLayer.Top
     exclusionMode: ExclusionMode.Ignore
-    //WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: keyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     anchors {
         top: true

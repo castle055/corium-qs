@@ -13,6 +13,7 @@ Item {
     property alias popup: popupWindow.content
     property alias leftSide: popupWindow.leftSide
     property alias fullHeight: popupWindow.fullHeight
+    property alias keyboardFocus: popupWindow.keyboardFocus
 
     Rectangle {
         width: parent.width
