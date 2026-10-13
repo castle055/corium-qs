@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Services.Pipewire
 import "utils"
@@ -74,45 +73,37 @@ BarPopupButton {
 
     popup: Rectangle {
         implicitWidth: 400
-        implicitHeight: 125
+        implicitHeight: popupColumn.implicitHeight + 32
         color: "transparent"
 
         Column {
+            id: popupColumn
             anchors.fill: parent
             anchors.margins: 16
             spacing: 14
 
             // Volume
 
-            Row {
+            FillSlider {
+                id: volumeSlider
+
                 width: parent.width
-                spacing: 10
 
-                Text {
-                    width: 45
-                    text: root.sink && root.sink.audio
-                    ? Math.round(root.sink.audio.volume * 100) + "%"
-                    : "--"
+                from: 0
+                to: 1
 
-                    color: "white"
-                }
+                value: root.sink && root.sink.audio
+                ? root.sink.audio.volume
+                : 0
 
-                Slider {
-                    id: volumeSlider
+                icon: root.sink && root.sink.audio && root.sink.audio.muted ? "󰖁" : "󰕾"
+                label: root.sink && root.sink.audio
+                ? Math.round(value * 100) + "%"
+                : "--"
 
-                    width: parent.width - 55
-
-                    from: 0
-                    to: 1
-
-                    value: root.sink && root.sink.audio
-                    ? root.sink.audio.volume
-                    : 0
-
-                    onMoved: {
-                        if (root.sink && root.sink.audio)
-                        root.sink.audio.volume = value
-                    }
+                onMoved: {
+                    if (root.sink && root.sink.audio)
+                    root.sink.audio.volume = value
                 }
             }
 
@@ -124,41 +115,66 @@ BarPopupButton {
 
             // Output device selector
 
-            ComboBox {
-                id: sinkSelector
-
+            Column {
                 width: parent.width
+                spacing: 4
 
-                model: {
-                    return Pipewire.nodes.values.filter(
+                Repeater {
+                    model: Pipewire.nodes.values.filter(
                         node => node.isSink && node.audio && !node.isStream && !node.description.includes("DisplayPort")
                     )
-                }
 
-                textRole: "nickname"
+                    // One large row per device, so it can be picked with a single tap.
+                    delegate: Rectangle {
+                        id: sinkRow
 
-                currentIndex: {
-                    const current = Pipewire.defaultAudioSink
-                    if (!current)
-                    return -1
+                        required property var modelData
 
-                    return model.indexOf(current)
-                }
+                        readonly property bool current: modelData === Pipewire.defaultAudioSink
 
-                onActivated: index => {
-                    const selected = model[index]
+                        width: parent.width
+                        height: 48
+                        radius: 10
 
-                    if (selected)
-                    Pipewire.preferredDefaultAudioSink = selected
-                }
+                        color: sinkMouse.pressed
+                        ? "#404040"
+                        : sinkRow.current ? "#292929" : "transparent"
 
-                delegate: ItemDelegate {
-                    width: sinkSelector.width
+                        MouseArea {
+                            id: sinkMouse
 
-                    //text: modelData.description || modelData.nickname || modelData.name
-                    text: modelData.nickname || modelData.name
+                            anchors.fill: parent
 
-                    highlighted: sinkSelector.highlightedIndex === index
+                            onClicked: Pipewire.preferredDefaultAudioSink = sinkRow.modelData
+                        }
+
+                        Text {
+                            id: checkIcon
+
+                            anchors.right: parent.right
+                            anchors.rightMargin: 14
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            visible: sinkRow.current
+                            text: "󰄬"
+                            color: "#80bfff"
+                            font.pixelSize: 18
+                        }
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 14
+                            anchors.right: checkIcon.left
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            text: sinkRow.modelData.nickname || sinkRow.modelData.name
+                            color: sinkRow.current ? "#80bfff" : "white"
+                            font.pixelSize: 14
+                            font.bold: sinkRow.current
+                            elide: Text.ElideRight
+                        }
+                    }
                 }
             }
         }
