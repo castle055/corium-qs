@@ -43,6 +43,8 @@ Item {
 
     OrganicPopUp {
         id: popupWindow
+        // Open on the same screen as the bar this button is in.
+        screen: root.QsWindow.window ? root.QsWindow.window.screen : null
         visible: root.popupVisible
         onDismissed: root.popupVisible = false
     }
