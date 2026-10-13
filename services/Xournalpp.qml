@@ -23,13 +23,16 @@ Singleton {
             const newVolumePath = notebook + "/" + volumeName
             console.log(`Creating volume... path: ${newVolumePath}, template: ${templatePath}`)
 
+            // Open the volume only once the copy is complete.
             run_script("cp \"$1\" \"$2\"",
                        ["sh", templatePath, newVolumePath],
                        (exitCode, stdout, stderr) => {
-                           //console.log(stdout)
-                           //console.log(stderr)
+                           if (exitCode !== 0) {
+                               console.warn(`Could not create volume ${newVolumePath}: ${stderr.trim()}`)
+                               return
+                           }
+                           open(newVolumePath)
                        })
-            open(newVolumePath)
         })
     }
 
