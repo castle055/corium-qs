@@ -36,7 +36,10 @@ Singleton {
         })
     }
 
+    // `template` is a name relative to a templates folder, e.g. "College/Theory";
+    // a trailing ".xopp" is accepted too.
     function lookupTemplate(notebookPath: string, template: string, callback) {
+        template = template.replace(/\.xopp$/i, "") || "default"
         const notebookLocal = notebookPath + "/.templates/" + template + ".xopp"
         run(["test", "-f", notebookLocal],
             (exitCode, stdout, stderr) => {

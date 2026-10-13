@@ -14,7 +14,7 @@ Item {
     required property var metadata
 
     property string color: (metadata != null && metadata.color != null && metadata.color.length > 0) ? metadata.color : "#001115"
-    property string template: (metadata != null && metadata.template != null && metadata.template.length > 0) ? metadata.template : "default.xopp"
+    property string template: (metadata != null && metadata.template != null && metadata.template.length > 0) ? metadata.template : "default"
 
     property int thumbnailWidth: 92
     property int thumbnailHeight: 129
