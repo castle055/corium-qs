@@ -70,7 +70,7 @@ BarPopupButton {
                 Layout.fillWidth: true
             }
 
-            TextField {
+            InputField {
                 id: searchField
 
                 Layout.fillWidth: true
@@ -78,18 +78,6 @@ BarPopupButton {
 
                 placeholderText: "Search applications..."
                 font.pixelSize: 18
-
-                color: "white"
-                placeholderTextColor: "#999999"
-
-                background: Rectangle {
-                    radius: 10
-                    color: "#303030"
-                    border.color: searchField.activeFocus
-                    ? "#80bfff"
-                    : "#484848"
-                    border.width: 1
-                }
 
                 // Results start right under the field, above the on-screen keyboard.
                 onTextChanged: applicationsScroll.contentItem.contentY = 0

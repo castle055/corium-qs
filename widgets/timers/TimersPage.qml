@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import "../../services"
+import "../utils"
 
 // Running timers, and a form to start a new one.
 Column {
@@ -101,12 +102,15 @@ Column {
                     anchors.verticalCenterOffset: -2
                     spacing: 6
 
-                    PillButton {
+                    Chip {
+                        idleColor: "#262626"
+                        textSize: 13
                         text: "+1 min"
                         onClicked: Timers.addTime(card.modelData.id, 60000)
                     }
 
-                    PillButton {
+                    Chip {
+                        idleColor: "#262626"
                         width: 44
                         text: page.icon(card.modelData.paused ? 0xF040A : 0xF03E4)
                         textSize: 20
@@ -115,7 +119,8 @@ Column {
                                    : Timers.pause(card.modelData.id)
                     }
 
-                    PillButton {
+                    Chip {
+                        idleColor: "#262626"
                         width: 44
                         text: page.icon(0xF0156)
                         textSize: 20
@@ -189,9 +194,11 @@ Column {
         Repeater {
             model: page.presets
 
-            delegate: PillButton {
+            delegate: Chip {
                 required property int modelData
 
+                idleColor: "#262626"
+                textSize: 13
                 width: (page.width - 3 * 8) / 4
                 text: modelData < 60 ? modelData + " min" : modelData / 60 + " h"
                 selected: page.duration === modelData * 60000
@@ -202,25 +209,11 @@ Column {
 
     // Name
 
-    TextField {
+    InputField {
         id: nameField
 
         width: parent.width
-        height: 44
-
         placeholderText: "Name (optional)"
-        font.pixelSize: 14
-        color: "white"
-        placeholderTextColor: "#777777"
-        leftPadding: 14
-        rightPadding: 14
-
-        background: Rectangle {
-            radius: 10
-            color: "#1c1c1c"
-            border.width: 1
-            border.color: nameField.activeFocus ? "#80bfff" : "#333333"
-        }
 
         onAccepted: {
             if (page.duration > 0)
@@ -258,34 +251,13 @@ Column {
             font.pixelSize: 14
         }
 
-        Rectangle {
-            id: toggle
-
+        // The row's MouseArea below handles taps, including on the switch.
+        Toggle {
             anchors.right: parent.right
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
 
-            width: 52
-            height: 30
-            radius: height / 2
-            color: page.sound ? "#80bfff" : "#404040"
-
-            Behavior on color {
-                ColorAnimation { duration: 120 }
-            }
-
-            Rectangle {
-                width: 24
-                height: 24
-                radius: 12
-                y: 3
-                x: page.sound ? toggle.width - width - 3 : 3
-                color: "white"
-
-                Behavior on x {
-                    NumberAnimation { duration: 120 }
-                }
-            }
+            checked: page.sound
         }
 
         MouseArea {
@@ -435,39 +407,6 @@ Column {
             }
             onReleased: repeatTimer.stop()
             onCanceled: repeatTimer.stop()
-        }
-    }
-
-    component PillButton: Rectangle {
-        id: pill
-
-        property alias text: pillLabel.text
-        property int textSize: 13
-        property bool selected: false
-
-        signal clicked()
-
-        width: Math.max(64, pillLabel.implicitWidth + 24)
-        height: 44
-        radius: 10
-
-        color: pillMouse.pressed ? "#404040" : selected ? "#203040" : "#262626"
-        border.width: selected ? 1 : 0
-        border.color: "#80bfff"
-
-        Text {
-            id: pillLabel
-
-            anchors.centerIn: parent
-            color: pill.selected ? "#80bfff" : "white"
-            font.pixelSize: pill.textSize
-        }
-
-        MouseArea {
-            id: pillMouse
-
-            anchors.fill: parent
-            onClicked: pill.clicked()
         }
     }
 }

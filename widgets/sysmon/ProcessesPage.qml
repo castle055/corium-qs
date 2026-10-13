@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell.Io
 import "../../services"
+import "../utils"
 
 // Running processes, sortable, with actions to end or kill them.
 Item {
@@ -230,43 +231,29 @@ Item {
 
         // Sort buttons: tap again to reverse.
         Row {
+            id: sortRow
+
             width: parent.width
             spacing: 6
 
             Repeater {
                 model: page.sortOptions
 
-                delegate: Rectangle {
+                delegate: Chip {
                     id: sortButton
 
                     required property var modelData
                     readonly property bool current: page.sortKey === modelData.key
 
-                    width: (parent.width - 3 * 6) / 4
-                    height: 44
-                    radius: 10
-                    color: sortMouse.pressed ? "#404040" : current ? "#203040" : "#1c1c1c"
-                    border.width: current ? 1 : 0
-                    border.color: "#80bfff"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: sortButton.modelData.label
-                              + (sortButton.current ? (page.sortDescending ? "  ↓" : "  ↑") : "")
-                        color: sortButton.current ? "#80bfff" : "white"
-                        font.pixelSize: 14
-                    }
-
-                    MouseArea {
-                        id: sortMouse
-                        anchors.fill: parent
-                        onClicked: page.setSort(sortButton.modelData.key, sortButton.modelData.descending)
-                    }
+                    width: (sortRow.width - 3 * sortRow.spacing) / 4
+                    text: modelData.label + (current ? (page.sortDescending ? "  ↓" : "  ↑") : "")
+                    selected: current
+                    onClicked: page.setSort(modelData.key, modelData.descending)
                 }
             }
         }
 
-        SearchField {
+        InputField {
             width: parent.width
             placeholderText: "Filter by name, PID or user"
             onTextChanged: page.filter = text
@@ -462,54 +449,6 @@ Item {
                     onStreamFinished: cmdline.text = text.trim() || "[" + row.name + "]"
                 }
             }
-        }
-    }
-
-    component SearchField: TextField {
-        id: field
-
-        height: 44
-        font.pixelSize: 14
-        color: "white"
-        placeholderTextColor: "#777777"
-        leftPadding: 14
-        rightPadding: 14
-
-        background: Rectangle {
-            radius: 10
-            color: "#1c1c1c"
-            border.width: 1
-            border.color: field.activeFocus ? "#80bfff" : "#333333"
-        }
-    }
-
-    component ActionButton: Rectangle {
-        id: action
-
-        property alias text: actionLabel.text
-        property bool danger: false
-
-        signal clicked()
-
-        height: 44
-        radius: 10
-        color: actionMouse.pressed
-               ? (danger ? "#5a2020" : "#404040")
-               : (danger ? "#3a1a1a" : "#303030")
-
-        Text {
-            id: actionLabel
-
-            anchors.centerIn: parent
-            color: action.danger ? "#ff7777" : "white"
-            font.pixelSize: 14
-            font.bold: true
-        }
-
-        MouseArea {
-            id: actionMouse
-            anchors.fill: parent
-            onClicked: action.clicked()
         }
     }
 }

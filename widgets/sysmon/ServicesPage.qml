@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import Quickshell.Io
+import "../utils"
 
 // systemd services. User services can be started, stopped, restarted and
 // their logs read; system services are only listed.
@@ -250,6 +251,8 @@ Item {
             spacing: 10
 
             Row {
+                id: scopeRow
+
                 width: parent.width
                 spacing: 6
 
@@ -262,7 +265,7 @@ Item {
                     delegate: Chip {
                         required property var modelData
 
-                        width: (parent.width - 6) / 2
+                        width: (scopeRow.width - scopeRow.spacing) / 2
                         text: modelData.label
                         selected: page.scope === modelData.value
                         onClicked: page.scope = modelData.value
@@ -271,6 +274,8 @@ Item {
             }
 
             Row {
+                id: statusRow
+
                 width: parent.width
                 spacing: 6
 
@@ -284,7 +289,7 @@ Item {
                     delegate: Chip {
                         required property var modelData
 
-                        width: (parent.width - 2 * 6) / 3
+                        width: (statusRow.width - 2 * statusRow.spacing) / 3
                         text: modelData.label
                               + (modelData.value === "failed"
                                  ? " · " + page.services.filter(s => s.active === "failed").length : "")
@@ -294,24 +299,11 @@ Item {
                 }
             }
 
-            TextField {
+            InputField {
                 id: searchField
 
                 width: parent.width
-                height: 44
                 placeholderText: "Filter services"
-                font.pixelSize: 14
-                color: "white"
-                placeholderTextColor: "#777777"
-                leftPadding: 14
-                rightPadding: 14
-
-                background: Rectangle {
-                    radius: 10
-                    color: "#1c1c1c"
-                    border.width: 1
-                    border.color: searchField.activeFocus ? "#80bfff" : "#333333"
-                }
 
                 onTextChanged: page.filter = text
             }
@@ -450,6 +442,8 @@ Item {
                 }
 
                 Row {
+                    id: actions
+
                     visible: row.expanded
                     x: 14
                     y: 52
@@ -467,7 +461,7 @@ Item {
                         delegate: ActionButton {
                             required property var modelData
 
-                            width: (parent.width - 3 * 6) / 4
+                            width: (actions.width - 3 * actions.spacing) / 4
                             text: modelData.label
                             onClicked: modelData.verb === "logs"
                                        ? page.openLogs(row.unit)
@@ -547,62 +541,6 @@ Item {
                     textFormat: Text.PlainText
                 }
             }
-        }
-    }
-
-    component Chip: Rectangle {
-        id: chip
-
-        property alias text: chipLabel.text
-        property bool selected: false
-
-        signal clicked()
-
-        height: 44
-        radius: 10
-        color: chipMouse.pressed ? "#404040" : selected ? "#203040" : "#1c1c1c"
-        border.width: selected ? 1 : 0
-        border.color: "#80bfff"
-
-        Text {
-            id: chipLabel
-
-            anchors.centerIn: parent
-            color: chip.selected ? "#80bfff" : "white"
-            font.pixelSize: 14
-        }
-
-        MouseArea {
-            id: chipMouse
-            anchors.fill: parent
-            onClicked: chip.clicked()
-        }
-    }
-
-    component ActionButton: Rectangle {
-        id: action
-
-        property alias text: actionLabel.text
-
-        signal clicked()
-
-        height: 44
-        radius: 10
-        color: actionMouse.pressed ? "#404040" : "#303030"
-
-        Text {
-            id: actionLabel
-
-            anchors.centerIn: parent
-            color: "white"
-            font.pixelSize: 14
-            font.bold: true
-        }
-
-        MouseArea {
-            id: actionMouse
-            anchors.fill: parent
-            onClicked: action.clicked()
         }
     }
 }

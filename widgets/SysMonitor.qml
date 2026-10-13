@@ -132,53 +132,19 @@ BarPopupButton {
 
             // Processes / Services switch
 
-            Rectangle {
+            TabSwitcher {
                 id: tabs
 
                 anchors.top: graphCaption.bottom
                 anchors.topMargin: 10
                 width: parent.width
-                height: 44
-                radius: 12
-                color: "#1c1c1c"
 
-                Row {
-                    anchors.fill: parent
-                    anchors.margins: 4
-
-                    Repeater {
-                        model: [
-                            { page: "processes", label: "Processes" },
-                            { page: "services", label: "Services" },
-                        ]
-
-                        delegate: Rectangle {
-                            id: tab
-
-                            required property var modelData
-                            readonly property bool current: root.page === modelData.page
-
-                            width: parent.width / 2
-                            height: parent.height
-                            radius: 9
-                            color: current ? "#353535" : tabMouse.pressed ? "#262626" : "transparent"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: tab.modelData.label
-                                color: tab.current ? "white" : "#aaaaaa"
-                                font.pixelSize: 14
-                                font.bold: tab.current
-                            }
-
-                            MouseArea {
-                                id: tabMouse
-                                anchors.fill: parent
-                                onClicked: root.page = tab.modelData.page
-                            }
-                        }
-                    }
-                }
+                model: [
+                    { value: "processes", label: "Processes" },
+                    { value: "services", label: "Services" },
+                ]
+                current: root.page
+                onActivated: value => root.page = value
             }
 
             ProcessesPage {

@@ -299,6 +299,7 @@ BarPopupButton {
                 IconButton {
                     visible: Iwd.powered
                     text: Iwd.scanning ? root.icon(0xF0453) : root.icon(0xF0450)
+                    textSize: 18
                     enabled: !Iwd.scanning
 
                     onClicked: Iwd.scan()
@@ -448,6 +449,7 @@ BarPopupButton {
                                     visible: networkRow.modelData.knownPath !== ""
                                              || networkRow.modelData.connected
                                     text: root.icon(0xF0142)
+                                    textSize: 16
                                     implicitWidth: 28
                                     implicitHeight: 28
                                     enabled: !root.busy
@@ -593,6 +595,8 @@ BarPopupButton {
                     PasswordField {
                         id: passwordField
 
+                        Layout.fillWidth: true
+
                         onAccepted: root.connectSelected()
                     }
 
@@ -632,8 +636,10 @@ BarPopupButton {
                         text: "Username"
                     }
 
-                    Field {
+                    InputField {
                         id: eapUserField
+
+                        Layout.fillWidth: true
 
                         placeholderText: root.selected?.name === "eduroam"
                                          ? "user@institution.edu"
@@ -646,6 +652,8 @@ BarPopupButton {
 
                     PasswordField {
                         id: eapPasswordField
+
+                        Layout.fillWidth: true
 
                         onAccepted: root.connectSelected()
                     }
@@ -686,8 +694,10 @@ BarPopupButton {
                         ]
                     }
 
-                    Field {
+                    InputField {
                         id: caPathField
+
+                        Layout.fillWidth: true
 
                         visible: caMode.currentValue === "file"
                         placeholderText: "~/Downloads/institution-ca.pem"
@@ -698,8 +708,10 @@ BarPopupButton {
                         text: caMode.currentValue === "system" ? "Server domain" : "Server domain (recommended)"
                     }
 
-                    Field {
+                    InputField {
                         id: eapDomainField
+
+                        Layout.fillWidth: true
 
                         visible: caMode.currentValue !== "none"
                         placeholderText: "radius.institution.edu"
@@ -722,8 +734,10 @@ BarPopupButton {
                         text: "Anonymous identity (optional)"
                     }
 
-                    Field {
+                    InputField {
                         id: eapAnonymousField
+
+                        Layout.fillWidth: true
 
                         placeholderText: Iwd.defaultAnonymousIdentity(eapUserField.text.trim())
                                          || "anonymous@institution.edu"
@@ -763,120 +777,6 @@ BarPopupButton {
     // Helper components
     // ------------------------------------------------------------------
 
-    component ActionButton: Rectangle {
-        id: button
-
-        property string text
-        property bool primary: false
-        property bool danger: false
-
-        signal clicked()
-
-        implicitWidth: Math.max(96, label.implicitWidth + 24)
-        implicitHeight: 34
-        radius: 6
-        opacity: enabled ? 1 : 0.4
-
-        color: buttonMouse.pressed
-               ? "#505050"
-               : buttonMouse.containsMouse
-                 ? "#404040"
-                 : primary ? "#353535" : "#292929"
-
-        border.width: primary ? 1 : 0
-        border.color: "#777777"
-
-        Text {
-            id: label
-
-            anchors.centerIn: parent
-
-            text: button.text
-            color: button.danger ? "#ff7777" : "white"
-            font.pixelSize: 12
-        }
-
-        MouseArea {
-            id: buttonMouse
-
-            anchors.fill: parent
-            hoverEnabled: true
-
-            onClicked: button.clicked()
-        }
-    }
-
-    component IconButton: Rectangle {
-        id: iconButton
-
-        property string text
-
-        signal clicked()
-
-        implicitWidth: 32
-        implicitHeight: 32
-        radius: width / 2
-        opacity: enabled ? 1 : 0.5
-
-        color: iconMouse.pressed
-               ? "#505050"
-               : iconMouse.containsMouse ? "#353535" : "transparent"
-
-        Text {
-            anchors.centerIn: parent
-
-            text: iconButton.text
-            color: "white"
-            font.pixelSize: 16
-        }
-
-        MouseArea {
-            id: iconMouse
-
-            anchors.fill: parent
-            hoverEnabled: true
-
-            onClicked: iconButton.clicked()
-        }
-    }
-
-    component Toggle: Rectangle {
-        id: toggle
-
-        property bool checked: false
-
-        signal toggled()
-
-        implicitWidth: 40
-        implicitHeight: 22
-        radius: height / 2
-        opacity: enabled ? 1 : 0.4
-
-        color: checked ? "#80bfff" : "#404040"
-
-        Rectangle {
-            width: 16
-            height: 16
-            radius: 8
-            y: 3
-            x: toggle.checked ? toggle.width - width - 3 : 3
-
-            color: "white"
-
-            Behavior on x {
-                NumberAnimation {
-                    duration: 120
-                }
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-
-            onClicked: toggle.toggled()
-        }
-    }
-
     component LinkText: Text {
         id: link
 
@@ -899,50 +799,5 @@ BarPopupButton {
     component FieldLabel: Text {
         color: "#aaaaaa"
         font.pixelSize: 12
-    }
-
-    component Field: TextField {
-        id: field
-
-        Layout.fillWidth: true
-        implicitHeight: 36
-
-        font.pixelSize: 13
-        color: "white"
-        placeholderTextColor: "#777777"
-        selectByMouse: true
-
-        background: Rectangle {
-            radius: 6
-            color: "#303030"
-            border.width: 1
-            border.color: field.activeFocus ? "#80bfff" : "#484848"
-        }
-    }
-
-    component PasswordField: Field {
-        id: passwordInput
-
-        property bool revealed: false
-
-        echoMode: revealed ? TextInput.Normal : TextInput.Password
-        rightPadding: 36
-
-        Text {
-            anchors.right: parent.right
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-
-            text: String.fromCodePoint(passwordInput.revealed ? 0xF0209 : 0xF0208)
-            color: "#aaaaaa"
-            font.pixelSize: 16
-
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -6
-
-                onClicked: passwordInput.revealed = !passwordInput.revealed
-            }
-        }
     }
 }

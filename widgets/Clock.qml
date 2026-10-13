@@ -122,6 +122,11 @@ BarPopupButton {
         }
     }
 
+    // A tab label with a Nerd Font icon in front.
+    function tabLabel(codepoint, label) {
+        return String.fromCodePoint(codepoint) + "  " + label
+    }
+
     function capitalize(text) {
         return text.charAt(0).toUpperCase() + text.slice(1)
     }
@@ -222,54 +227,17 @@ BarPopupButton {
 
             // Calendar / Timers switch
 
-            Rectangle {
+            TabSwitcher {
                 width: parent.width
-                height: 44
-                radius: 12
-                color: "#1c1c1c"
 
-                Row {
-                    anchors.fill: parent
-                    anchors.margins: 4
-
-                    Repeater {
-                        model: [
-                            { page: "calendar", label: "Calendar", icon: 0xF00ED },
-                            { page: "timers", label: "Timers", icon: 0xF13AB },
-                            { page: "stopwatch", label: "Stopwatch", icon: 0xF051B },
-                        ]
-
-                        delegate: Rectangle {
-                            id: tab
-
-                            required property var modelData
-                            readonly property bool current: root.page === modelData.page
-
-                            width: parent.width / 3
-                            height: parent.height
-                            radius: 9
-                            color: current ? "#353535" : tabMouse.pressed ? "#262626" : "transparent"
-
-                            Text {
-                                anchors.centerIn: parent
-
-                                text: String.fromCodePoint(tab.modelData.icon) + "  " + tab.modelData.label
-                                      + (tab.modelData.page === "timers" && Timers.active
-                                         ? " · " + Timers.timers.length : "")
-                                color: tab.current ? "white" : "#aaaaaa"
-                                font.pixelSize: 14
-                                font.bold: tab.current
-                            }
-
-                            MouseArea {
-                                id: tabMouse
-
-                                anchors.fill: parent
-                                onClicked: root.page = tab.modelData.page
-                            }
-                        }
-                    }
-                }
+                model: [
+                    { value: "calendar", label: root.tabLabel(0xF00ED, "Calendar") },
+                    { value: "timers", label: root.tabLabel(0xF13AB, "Timers")
+                                              + (Timers.active ? " · " + Timers.timers.length : "") },
+                    { value: "stopwatch", label: root.tabLabel(0xF051B, "Stopwatch") },
+                ]
+                current: root.page
+                onActivated: value => root.page = value
             }
 
             TimersPage {
@@ -294,13 +262,14 @@ BarPopupButton {
                     width: parent.width
                     height: 44
 
-                    NavButton {
+                    IconButton {
                         id: prevButton
 
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
 
                         text: "󰅁"
+                        textSize: 22
                         onClicked: root.changeMonth(-1)
                     }
 
@@ -317,13 +286,14 @@ BarPopupButton {
                         font.bold: true
                     }
 
-                    NavButton {
+                    IconButton {
                         id: nextButton
 
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
 
                         text: "󰅂"
+                        textSize: 22
                         onClicked: root.changeMonth(1)
                     }
                 }
@@ -618,34 +588,6 @@ BarPopupButton {
                     }
                 }
             }
-        }
-    }
-
-    component NavButton: Rectangle {
-        id: button
-
-        property alias text: label.text
-        signal clicked()
-
-        width: 44
-        height: 44
-        radius: width / 2
-
-        color: buttonMouse.pressed ? "#404040" : "transparent"
-
-        Text {
-            id: label
-
-            anchors.centerIn: parent
-            color: "white"
-            font.pixelSize: 22
-        }
-
-        MouseArea {
-            id: buttonMouse
-
-            anchors.fill: parent
-            onClicked: button.clicked()
         }
     }
 }
