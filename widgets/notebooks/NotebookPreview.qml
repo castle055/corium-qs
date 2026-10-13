@@ -99,7 +99,10 @@ Item {
                         onClicked: {
                             let nextIndex = 0
                             for (let i = 0; i < files.count; i++) {
-                                nextIndex = Math.max(nextIndex, parseInt(files.get(i, "fileBaseName").substring(0,2)) + 1)
+                                // Only files named with a two-digit prefix ("03_...") count.
+                                const prefix = files.get(i, "fileBaseName").substring(0, 2)
+                                if (/^\d\d$/.test(prefix))
+                                    nextIndex = Math.max(nextIndex, parseInt(prefix, 10) + 1)
                             }
                             const newName = ("00" + nextIndex).slice(-2) + "_Untitled.xopp"
                             //console.log("Next name: " + newName)
