@@ -43,7 +43,7 @@ BarPopupButton {
             }
 
             color: {
-                if (root.sink.audio.muted)
+                if (!root.sink || !root.sink.audio || root.sink.audio.muted)
                 return "gray"
 
                 return "white"
