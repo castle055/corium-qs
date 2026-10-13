@@ -31,7 +31,7 @@ BarPopupButton {
     }
 
     popup: NotebookManager {
-        basePath: "/home/castle/Notes/Notebooks"
+        basePath: Quickshell.env("HOME") + "/Notes/Notebooks"
         implicitWidth: 450
         implicitHeight: screen.height - 48
     }

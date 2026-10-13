@@ -58,7 +58,7 @@ directly:
 - For the calendar: KOrganizer/Akonadi and the `corium-calendar` helper (see below)
 
 Some things are hardcoded for my setup, e.g. the notebook folder is
-`/home/castle/Notes/Notebooks` in `widgets/NotebookLauncher.qml`.
+`~/Notes/Notebooks` in `widgets/NotebookLauncher.qml`.
 
 ## Running it
 

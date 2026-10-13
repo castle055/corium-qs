@@ -111,7 +111,7 @@ Scope {
   //    color: "black"
 
   //    NotebookManager {
-  //        basePath: "/home/castle/Notes/Notebooks"
+  //        basePath: Quickshell.env("HOME") + "/Notes/Notebooks"
   //        implicitWidth: test_win.implicitWidth
   //    }
   //}
