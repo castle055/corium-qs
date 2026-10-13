@@ -258,7 +258,7 @@ BarPopupButton {
 
                                                 onClicked: {
                                                     LauncherState.launchApplication(modelData)
-                                                    root.dismissed()
+                                                    root.popupVisible = false
                                                 }
                                             }
                                         }
@@ -353,7 +353,7 @@ BarPopupButton {
 
                                                 onClicked: {
                                                     LauncherState.launchApplication(modelData)
-                                                    root.dismissed()
+                                                    root.popupVisible = false
                                                 }
                                             }
                                         }
@@ -496,7 +496,7 @@ BarPopupButton {
 
                                                 onClicked: {
                                                     LauncherState.launchApplication(modelData)
-                                                    root.dismissed()
+                                                    root.popupVisible = false
                                                 }
                                             }
                                         }
