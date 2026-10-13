@@ -1,12 +1,15 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "utils"
 
-Item {
+BarPopupButton {
     id: root
 
     property int brightness: 0
     property int maximum: 100
+
+    readonly property int percent: Math.round(root.brightness / root.maximum * 100)
 
     implicitWidth: 60
     implicitHeight: 48
@@ -19,7 +22,8 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 const value = parseInt(text.trim())
-                if (!isNaN(value))
+                // Ignore polls while dragging so the slider doesn't jump back.
+                if (!isNaN(value) && !brightnessSlider.pressed)
                     root.brightness = value
             }
         }
@@ -49,10 +53,33 @@ Item {
         }
     }
 
-    //Rectangle {
-    //    anchors.fill: parent
-    //    color: "red"
-    //}
+    // Rate-limit brightnessctl calls while the slider is being dragged.
+    property int pendingPercent: -1
+
+    Timer {
+        id: applyTimer
+        interval: 40
+
+        onTriggered: {
+            if (root.pendingPercent < 0)
+                return
+            Quickshell.execDetached([
+                "brightnessctl",
+                "--min-value=5",
+                "set",
+                root.pendingPercent + "%"
+            ])
+            root.pendingPercent = -1
+        }
+    }
+
+    function setPercent(value) {
+        value = Math.max(1, Math.min(100, Math.round(value)))
+        root.brightness = Math.round(value / 100 * root.maximum)
+        root.pendingPercent = value
+        if (!applyTimer.running)
+            applyTimer.start()
+    }
 
     Row {
         anchors.centerIn: parent
@@ -68,8 +95,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: Math.round(root.brightness / root.maximum * 100) +
-            "%"
+            text: root.percent + "%"
 
             color: "white"
             font.pixelSize: 10
@@ -100,7 +126,8 @@ Item {
         }
 
         onClicked: {
-            // Nothing for now.
+            root.popupVisible = true
+            getBrightness.running = true
         }
     }
 
@@ -133,5 +160,29 @@ Item {
     Component.onCompleted: {
         getMaximum.running = true
         getBrightness.running = true
+    }
+
+    popup: Rectangle {
+        implicitWidth: 400
+        implicitHeight: 74
+        color: "transparent"
+
+        FillSlider {
+            id: brightnessSlider
+
+            anchors.fill: parent
+            anchors.margins: 16
+
+            from: 1
+            to: 100
+            stepSize: 1
+
+            value: root.percent
+
+            icon: "󰃠"
+            label: Math.round(value) + "%"
+
+            onMoved: root.setPercent(value)
+        }
     }
 }
