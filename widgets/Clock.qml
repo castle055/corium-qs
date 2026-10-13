@@ -4,12 +4,19 @@ import QtQuick
 import QtQuick.Controls
 import "utils"
 import "../services"
+import "timers"
 
 BarPopupButton {
     id: root
 
-    implicitWidth: clockText.implicitWidth + 24
+    implicitWidth: barRow.implicitWidth + 24
     implicitHeight: 48
+
+    // The timers page has a name field.
+    keyboardFocus: true
+
+    // Which page the popup shows: "calendar" or "timers". Kept between openings.
+    property string page: "calendar"
 
     // Kept fresh while the popup is open, so the header and "today" stay correct.
     property date now: new Date()
@@ -131,15 +138,42 @@ BarPopupButton {
         onTriggered: root.now = new Date()
     }
 
-    Text {
-        id: clockText
+    // Amber while a timer is about to finish.
+    readonly property color barColor: Timers.almostDone ? "#ffaa00" : "white"
+
+    Row {
+        id: barRow
 
         anchors.centerIn: parent
+        spacing: 6
 
-        text: Time.time
-        font.bold: false
-        font.pointSize: 12
-        color: "white"
+        // Shown while any timer is set; dimmed if they are all paused.
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: Timers.active
+
+            text: String.fromCodePoint(0xF13AB)
+            color: root.barColor
+            opacity: Timers.counting ? 1 : 0.5
+            font.pixelSize: 16
+
+            Behavior on color {
+                ColorAnimation { duration: 600 }
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+
+            text: Time.time
+            font.bold: false
+            font.pointSize: 12
+            color: root.barColor
+
+            Behavior on color {
+                ColorAnimation { duration: 600 }
+            }
+        }
     }
 
     popup: Rectangle {
@@ -186,333 +220,395 @@ BarPopupButton {
                 color: "#404040"
             }
 
-            // Month navigation
-
-            Item {
-                width: parent.width
-                height: 44
-
-                NavButton {
-                    id: prevButton
-
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    text: "󰅁"
-                    onClicked: root.changeMonth(-1)
-                }
-
-                Text {
-                    anchors.left: prevButton.right
-                    anchors.right: nextButton.left
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    horizontalAlignment: Text.AlignHCenter
-                    text: root.capitalize(Qt.locale().standaloneMonthName(root.shownMonth))
-                          + " " + root.shownYear
-                    color: "white"
-                    font.pixelSize: 16
-                    font.bold: true
-                }
-
-                NavButton {
-                    id: nextButton
-
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    text: "󰅂"
-                    onClicked: root.changeMonth(1)
-                }
-            }
-
-            // Calendar
-
-            Item {
-                width: parent.width
-                height: dayNames.height + monthGrid.height
-
-                readonly property real weekColumnWidth: 30
-                readonly property real cellWidth: (width - weekColumnWidth) / 7
-
-                DayOfWeekRow {
-                    id: dayNames
-
-                    x: parent.weekColumnWidth
-                    width: parent.width - parent.weekColumnWidth
-                    height: 28
-                    padding: 0
-                    spacing: 0
-
-                    locale: monthGrid.locale
-
-                    delegate: Text {
-                        required property string shortName
-
-                        text: shortName
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        color: "#aaaaaa"
-                        font.pixelSize: 12
-                    }
-                }
-
-                WeekNumberColumn {
-                    y: dayNames.height
-                    width: parent.weekColumnWidth
-                    height: monthGrid.height
-                    padding: 0
-                    spacing: 0
-
-                    month: monthGrid.month
-                    year: monthGrid.year
-                    locale: monthGrid.locale
-
-                    delegate: Text {
-                        required property int weekNumber
-
-                        text: weekNumber
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        color: "#666666"
-                        font.pixelSize: 11
-                    }
-                }
-
-                MonthGrid {
-                    id: monthGrid
-
-                    x: parent.weekColumnWidth
-                    y: dayNames.height
-                    width: parent.width - parent.weekColumnWidth
-                    height: 6 * 44
-                    padding: 0
-                    spacing: 0
-
-                    month: root.shownMonth
-                    year: root.shownYear
-                    // English names, but weeks start on Monday (the system is en_US).
-                    locale: Qt.locale("en_GB")
-
-                    delegate: Item {
-                        id: dayCell
-
-                        required property int day
-                        required property int month
-                        required property int year
-                        required property bool today
-
-                        readonly property bool inMonth: month === monthGrid.month
-                        readonly property string key: root.dayKey(year, month, day)
-                        readonly property bool selected: key === root.selectedKey
-                        readonly property var events: root.eventsByDay[key] ?? []
-
-                        Rectangle {
-                            id: dayCircle
-
-                            anchors.centerIn: parent
-                            width: Math.min(parent.width, parent.height) - 4
-                            height: width
-                            radius: width / 2
-
-                            color: dayCell.today
-                                   ? "#80bfff"
-                                   : dayTap.pressed ? "#404040" : "transparent"
-                            border.width: dayCell.selected && !dayCell.today ? 2 : 0
-                            border.color: "#80bfff"
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            anchors.verticalCenterOffset: -3
-
-                            text: dayCell.day
-                            color: dayCell.today
-                                   ? "#202020"
-                                   : dayCell.inMonth ? "white" : "#555555"
-                            font.pixelSize: 14
-                            font.bold: dayCell.today
-                        }
-
-                        // One dot per event, in its calendar's colour, up to three.
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottom: dayCircle.bottom
-                            anchors.bottomMargin: 7
-                            spacing: 3
-
-                            Repeater {
-                                model: dayCell.events.slice(0, 3)
-
-                                delegate: Rectangle {
-                                    required property var modelData
-
-                                    width: 5
-                                    height: 5
-                                    radius: 2.5
-                                    color: dayCell.today ? "#202020" : modelData.color
-                                    opacity: dayCell.inMonth ? 1 : 0.5
-                                }
-                            }
-                        }
-
-                        TapHandler {
-                            id: dayTap
-
-                            onTapped: {
-                                root.selectedKey = dayCell.key
-                                if (!dayCell.inMonth) {
-                                    // Also show that day's month, keeping the selection.
-                                    const key = dayCell.key
-                                    root.changeMonth(dayCell.year * 12 + dayCell.month
-                                                     - (root.shownYear * 12 + root.shownMonth))
-                                    root.selectedKey = key
-                                }
-                            }
-                        }
-                    }
-
-                    // Swipe left/right on the calendar to change month.
-                    DragHandler {
-                        target: null
-                        xAxis.enabled: true
-                        yAxis.enabled: false
-
-                        onActiveChanged: {
-                            if (active)
-                                return
-                            if (centroid.scenePosition.x - centroid.scenePressPosition.x > 40)
-                                root.changeMonth(-1)
-                            else if (centroid.scenePosition.x - centroid.scenePressPosition.x < -40)
-                                root.changeMonth(1)
-                        }
-                    }
-
-                    WheelHandler {
-                        onWheel: event => root.changeMonth(event.angleDelta.y > 0 ? -1 : 1)
-                    }
-                }
-            }
-
-            // Events of the selected day
-
-            Column {
-                width: parent.width
-                spacing: 8
-
-                visible: CalendarEvents.ready
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: "#404040"
-                }
-
-                Text {
-                    width: parent.width
-                    text: root.dayTitle(root.selectedKey)
-                    color: "#aaaaaa"
-                    font.pixelSize: 13
-                    elide: Text.ElideRight
-                }
-
-                Text {
-                    visible: root.selectedEvents.length === 0
-                    text: "No events"
-                    color: "#777777"
-                    font.pixelSize: 13
-                }
-
-                ListView {
-                    id: eventList
-
-                    width: parent.width
-                    // Room for four events; scroll for more.
-                    height: Math.min(contentHeight, 4 * 52 + 3 * spacing)
-                    visible: count > 0
-
-                    clip: true
-                    spacing: 6
-                    boundsBehavior: Flickable.StopAtBounds
-                    interactive: contentHeight > height
-
-                    model: root.selectedEvents
-
-                    delegate: Rectangle {
-                        id: eventRow
-
-                        required property var modelData
-
-                        width: eventList.width
-                        height: 52
-                        radius: 10
-                        color: "#1c1c1c"
-
-                        Rectangle {
-                            id: colorBar
-
-                            anchors.left: parent.left
-                            anchors.leftMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 4
-                            height: parent.height - 18
-                            radius: 2
-                            color: eventRow.modelData.color
-                        }
-
-                        Column {
-                            anchors.left: colorBar.right
-                            anchors.leftMargin: 10
-                            anchors.right: parent.right
-                            anchors.rightMargin: 12
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                width: parent.width
-                                text: eventRow.modelData.summary || "(No title)"
-                                color: "white"
-                                font.pixelSize: 14
-                                font.bold: true
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                width: parent.width
-                                text: root.timeLabel(eventRow.modelData, root.selectedKey)
-                                      + (eventRow.modelData.location ? " · " + eventRow.modelData.location : "")
-                                color: "#aaaaaa"
-                                font.pixelSize: 12
-                                elide: Text.ElideRight
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Jump back to today
+            // Calendar / Timers switch
 
             Rectangle {
                 width: parent.width
                 height: 44
-                radius: 10
+                radius: 12
+                color: "#1c1c1c"
 
-                opacity: root.showingToday ? 0.4 : 1
-                color: todayMouse.pressed ? "#404040" : "#292929"
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 4
 
-                Text {
-                    anchors.centerIn: parent
-                    text: "Today"
-                    color: "white"
-                    font.pixelSize: 14
+                    Repeater {
+                        model: [
+                            { page: "calendar", label: "Calendar", icon: 0xF00ED },
+                            { page: "timers", label: "Timers", icon: 0xF13AB },
+                        ]
+
+                        delegate: Rectangle {
+                            id: tab
+
+                            required property var modelData
+                            readonly property bool current: root.page === modelData.page
+
+                            width: parent.width / 2
+                            height: parent.height
+                            radius: 9
+                            color: current ? "#353535" : tabMouse.pressed ? "#262626" : "transparent"
+
+                            Text {
+                                anchors.centerIn: parent
+
+                                text: String.fromCodePoint(tab.modelData.icon) + "  " + tab.modelData.label
+                                      + (tab.modelData.page === "timers" && Timers.active
+                                         ? " · " + Timers.timers.length : "")
+                                color: tab.current ? "white" : "#aaaaaa"
+                                font.pixelSize: 14
+                                font.bold: tab.current
+                            }
+
+                            MouseArea {
+                                id: tabMouse
+
+                                anchors.fill: parent
+                                onClicked: root.page = tab.modelData.page
+                            }
+                        }
+                    }
+                }
+            }
+
+            TimersPage {
+                width: parent.width
+                visible: root.page === "timers"
+            }
+
+            Column {
+                width: parent.width
+                spacing: 14
+                visible: root.page === "calendar"
+
+                // Month navigation
+
+                Item {
+                    width: parent.width
+                    height: 44
+
+                    NavButton {
+                        id: prevButton
+
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        text: "󰅁"
+                        onClicked: root.changeMonth(-1)
+                    }
+
+                    Text {
+                        anchors.left: prevButton.right
+                        anchors.right: nextButton.left
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        horizontalAlignment: Text.AlignHCenter
+                        text: root.capitalize(Qt.locale().standaloneMonthName(root.shownMonth))
+                              + " " + root.shownYear
+                        color: "white"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+
+                    NavButton {
+                        id: nextButton
+
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        text: "󰅂"
+                        onClicked: root.changeMonth(1)
+                    }
                 }
 
-                MouseArea {
-                    id: todayMouse
+                // Calendar
 
-                    anchors.fill: parent
-                    enabled: !root.showingToday
-                    onClicked: root.goToToday()
+                Item {
+                    width: parent.width
+                    height: dayNames.height + monthGrid.height
+
+                    readonly property real weekColumnWidth: 30
+                    readonly property real cellWidth: (width - weekColumnWidth) / 7
+
+                    DayOfWeekRow {
+                        id: dayNames
+
+                        x: parent.weekColumnWidth
+                        width: parent.width - parent.weekColumnWidth
+                        height: 28
+                        padding: 0
+                        spacing: 0
+
+                        locale: monthGrid.locale
+
+                        delegate: Text {
+                            required property string shortName
+
+                            text: shortName
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            color: "#aaaaaa"
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    WeekNumberColumn {
+                        y: dayNames.height
+                        width: parent.weekColumnWidth
+                        height: monthGrid.height
+                        padding: 0
+                        spacing: 0
+
+                        month: monthGrid.month
+                        year: monthGrid.year
+                        locale: monthGrid.locale
+
+                        delegate: Text {
+                            required property int weekNumber
+
+                            text: weekNumber
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            color: "#666666"
+                            font.pixelSize: 11
+                        }
+                    }
+
+                    MonthGrid {
+                        id: monthGrid
+
+                        x: parent.weekColumnWidth
+                        y: dayNames.height
+                        width: parent.width - parent.weekColumnWidth
+                        height: 6 * 44
+                        padding: 0
+                        spacing: 0
+
+                        month: root.shownMonth
+                        year: root.shownYear
+                        // English names, but weeks start on Monday (the system is en_US).
+                        locale: Qt.locale("en_GB")
+
+                        delegate: Item {
+                            id: dayCell
+
+                            required property int day
+                            required property int month
+                            required property int year
+                            required property bool today
+
+                            readonly property bool inMonth: month === monthGrid.month
+                            readonly property string key: root.dayKey(year, month, day)
+                            readonly property bool selected: key === root.selectedKey
+                            readonly property var events: root.eventsByDay[key] ?? []
+
+                            Rectangle {
+                                id: dayCircle
+
+                                anchors.centerIn: parent
+                                width: Math.min(parent.width, parent.height) - 4
+                                height: width
+                                radius: width / 2
+
+                                color: dayCell.today
+                                       ? "#80bfff"
+                                       : dayTap.pressed ? "#404040" : "transparent"
+                                border.width: dayCell.selected && !dayCell.today ? 2 : 0
+                                border.color: "#80bfff"
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                anchors.verticalCenterOffset: -3
+
+                                text: dayCell.day
+                                color: dayCell.today
+                                       ? "#202020"
+                                       : dayCell.inMonth ? "white" : "#555555"
+                                font.pixelSize: 14
+                                font.bold: dayCell.today
+                            }
+
+                            // One dot per event, in its calendar's colour, up to three.
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottom: dayCircle.bottom
+                                anchors.bottomMargin: 7
+                                spacing: 3
+
+                                Repeater {
+                                    model: dayCell.events.slice(0, 3)
+
+                                    delegate: Rectangle {
+                                        required property var modelData
+
+                                        width: 5
+                                        height: 5
+                                        radius: 2.5
+                                        color: dayCell.today ? "#202020" : modelData.color
+                                        opacity: dayCell.inMonth ? 1 : 0.5
+                                    }
+                                }
+                            }
+
+                            TapHandler {
+                                id: dayTap
+
+                                onTapped: {
+                                    root.selectedKey = dayCell.key
+                                    if (!dayCell.inMonth) {
+                                        // Also show that day's month, keeping the selection.
+                                        const key = dayCell.key
+                                        root.changeMonth(dayCell.year * 12 + dayCell.month
+                                                         - (root.shownYear * 12 + root.shownMonth))
+                                        root.selectedKey = key
+                                    }
+                                }
+                            }
+                        }
+
+                        // Swipe left/right on the calendar to change month.
+                        DragHandler {
+                            target: null
+                            xAxis.enabled: true
+                            yAxis.enabled: false
+
+                            onActiveChanged: {
+                                if (active)
+                                    return
+                                if (centroid.scenePosition.x - centroid.scenePressPosition.x > 40)
+                                    root.changeMonth(-1)
+                                else if (centroid.scenePosition.x - centroid.scenePressPosition.x < -40)
+                                    root.changeMonth(1)
+                            }
+                        }
+
+                        WheelHandler {
+                            onWheel: event => root.changeMonth(event.angleDelta.y > 0 ? -1 : 1)
+                        }
+                    }
+                }
+
+                // Events of the selected day
+
+                Column {
+                    width: parent.width
+                    spacing: 8
+
+                    visible: CalendarEvents.ready
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: "#404040"
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: root.dayTitle(root.selectedKey)
+                        color: "#aaaaaa"
+                        font.pixelSize: 13
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        visible: root.selectedEvents.length === 0
+                        text: "No events"
+                        color: "#777777"
+                        font.pixelSize: 13
+                    }
+
+                    ListView {
+                        id: eventList
+
+                        width: parent.width
+                        // Room for four events; scroll for more.
+                        height: Math.min(contentHeight, 4 * 52 + 3 * spacing)
+                        visible: count > 0
+
+                        clip: true
+                        spacing: 6
+                        boundsBehavior: Flickable.StopAtBounds
+                        interactive: contentHeight > height
+
+                        model: root.selectedEvents
+
+                        delegate: Rectangle {
+                            id: eventRow
+
+                            required property var modelData
+
+                            width: eventList.width
+                            height: 52
+                            radius: 10
+                            color: "#1c1c1c"
+
+                            Rectangle {
+                                id: colorBar
+
+                                anchors.left: parent.left
+                                anchors.leftMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 4
+                                height: parent.height - 18
+                                radius: 2
+                                color: eventRow.modelData.color
+                            }
+
+                            Column {
+                                anchors.left: colorBar.right
+                                anchors.leftMargin: 10
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 2
+
+                                Text {
+                                    width: parent.width
+                                    text: eventRow.modelData.summary || "(No title)"
+                                    color: "white"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    width: parent.width
+                                    text: root.timeLabel(eventRow.modelData, root.selectedKey)
+                                          + (eventRow.modelData.location ? " · " + eventRow.modelData.location : "")
+                                    color: "#aaaaaa"
+                                    font.pixelSize: 12
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Jump back to today
+
+                Rectangle {
+                    width: parent.width
+                    height: 44
+                    radius: 10
+
+                    opacity: root.showingToday ? 0.4 : 1
+                    color: todayMouse.pressed ? "#404040" : "#292929"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Today"
+                        color: "white"
+                        font.pixelSize: 14
+                    }
+
+                    MouseArea {
+                        id: todayMouse
+
+                        anchors.fill: parent
+                        enabled: !root.showingToday
+                        onClicked: root.goToToday()
+                    }
                 }
             }
         }
