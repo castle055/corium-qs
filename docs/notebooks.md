@@ -78,13 +78,15 @@ The "+" card at the end of a notebook strip:
    1. `<notebook>/.templates/<template>.xopp`
    2. `~/.local/share/quickshell/corium/notebook-templates/<template>.xopp`
    3. `~/.local/share/quickshell/corium/notebook-templates/default.xopp`
-4. The template is copied with `cp` and opened in Xournal++. Rename it from
-   inside Xournal++ (Save As) or the file manager.
+4. The template is copied with `cp`, and the new file is opened in
+   Xournal++ once the copy has finished. If the copy fails, a warning is
+   logged and nothing is opened. Rename the file from inside Xournal++
+   (Save As) or the file manager.
 
-`template` may contain slashes (`"College/Theory"`) to use subfolders of the
-templates directory. When `notebook.json` has no `template`, NotebookPreview
-passes `"default.xopp"`, which resolves to `default.xopp.xopp`, isn't found,
-and falls through to the default template anyway.
+`template` is a name relative to a templates folder and may contain slashes
+(`"College/Theory"`) to use subfolders. A trailing `.xopp` is accepted and
+ignored, so `"Theory"` and `"Theory.xopp"` mean the same thing. When
+`notebook.json` has no `template`, `"default"` is used.
 
 ## Thumbnails and page counts
 

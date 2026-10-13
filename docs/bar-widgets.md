@@ -169,7 +169,7 @@ The large commented-out block at the end is the previous version (with a
    [`sysmon/Graph.qml`](../widgets/sysmon/Graph.qml), a `Canvas` that plots
    0–100 series with the newest sample on the right; the x axis always spans
    `SystemStats.historyLength` samples (10 minutes).
-2. Tabs: Processes / Services.
+2. Tabs (`TabSwitcher`): Processes / Services.
 
 ### Processes page
 

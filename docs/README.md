@@ -61,7 +61,9 @@ widgets/
   notebooks/                  notebook browser components
   sysmon/                     system monitor pages and the graph
   timers/                     timers and stopwatch pages of the clock popup
-  utils/                      BarPopupButton, OrganicPopUp, FillSlider
+  utils/                      shared building blocks: BarPopupButton, OrganicPopUp, FillSlider,
+                              ActionButton, Chip, IconButton, Toggle, InputField,
+                              PasswordField, TabSwitcher
 services/
   qmldir                      registers the singletons below
   CalendarEvents.qml          talks to the corium-calendar helper

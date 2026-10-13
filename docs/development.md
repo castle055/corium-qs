@@ -73,7 +73,10 @@ BarPopupButton {
 ```
 
 [`Brightness.qml`](../widgets/Brightness.qml) is the simplest real example;
-[`Battery.qml`](../widgets/Battery.qml) shows inline helper components. If the
+[`Battery.qml`](../widgets/Battery.qml) shows an inline helper component. Build
+popup contents from the shared controls in `widgets/utils/` (`ActionButton`,
+`Chip`, `InputField`, …; see
+[architecture.md](architecture.md#shared-controls)). If the
 popup is full-height, use `implicitHeight: screen.height - 48` and pass
 `screen: bar.screen` from `Bar.qml` the way NotebookLauncher/SysMonitor do.
 
@@ -100,8 +103,18 @@ positional `$1…` args to `sh -c`, never by splicing them into the script.
 ### Add a popup tab / page
 
 Clock and SysMonitor both use the same pattern: a `page` string property, a
-row of tab `Rectangle`s from a `Repeater` over `[{ page, label }]`, and pages
-with `visible: root.page === "…"`. Give expensive pages an `active` property
+`TabSwitcher` to change it, and pages with `visible: root.page === "…"`:
+
+```qml
+TabSwitcher {
+    width: parent.width
+    model: [{ value: "processes", label: "Processes" }, { value: "services", label: "Services" }]
+    current: root.page
+    onActivated: value => root.page = value
+}
+```
+
+ Give expensive pages an `active` property
 bound to `root.popupVisible && visible` and gate their timers on it.
 
 ## Known rough edges
@@ -111,14 +124,10 @@ these are fixed yet.
 
 - **`OnScreenKeyboardToggle.keyboardVisible`** flips locally and isn't
   synced with wvkbd's real state. Nothing reads it.
-- **`Xournalpp.createNewVolume`** opens the file without waiting for `cp` to
-  finish.
-- **Template default** `"default.xopp"` gets `.xopp` appended again; it only
-  works because of the fallback. See [notebooks.md](notebooks.md#creating-a-new-volume).
-- **`ServicesPage.qml` logs `Cannot read property 'width' of null`** (line
-  ~470, the Start/Stop/Restart/Logs buttons): the delegates' `parent` is
-  briefly null while the `Repeater` creates them. Harmless, but it fills the
-  log every time the services list refreshes.
+- **`Xournalpp.qml` logs `Cannot read property 'finished' of null`** when
+  the config reloads while thumbnail or page-count commands are still
+  running: their QML objects are torn down by the reload before the process
+  exits. Harmless, and only seen while editing.
 - **Dead code:**
   - Large commented-out old versions at the bottom of `Audio.qml` and
     `AppLauncher.qml`, a commented `Clock` and `NotebookManager` test window in
@@ -126,11 +135,8 @@ these are fixed yet.
   - `BarPopupButton` imports `Quickshell.Services.Pipewire` and has an unused
     `wheel_acc` and empty hover handlers.
   - `shell.qml` imports `widgets/utils` but doesn't use it.
-- **Inline components are duplicated** across files (`ActionButton`, `Chip`,
-  `PillButton`, search fields, tab bars). That was deliberate to keep each
-  widget self-contained. If you change the look of one, grep for the others.
-- **Colours are literals** everywhere; see the palette in
-  [architecture.md](architecture.md#visual-style).
+- **Colours are literals** everywhere, in the shared controls too; see the
+  palette in [architecture.md](architecture.md#visual-style).
 
 ## Debugging tips
 

@@ -43,7 +43,7 @@ notebook files. Details of the notebook model are in [notebooks.md](notebooks.md
 
 ```
 open(file)                                         xournalpp <file>, detached
-createNewVolume(notebookDir, fileName, template)   copy a template there, then open it
+createNewVolume(notebookDir, fileName, template)   copy a template there, then open it once copied
 lookupTemplate(notebookDir, template, cb)          resolve a template name to a .xopp path
 getPageCount(path, cb)                             cb(n) or cb(-1)
 generateThumbnail(path, mTime, cb)                 cb(pngPath) once a thumbnail exists
@@ -66,9 +66,10 @@ Implementation notes:
 - `templateDir` comes from `StandardPaths.AppDataLocation`, which for
   Quickshell resolves to `~/.local/share/quickshell`; the `.substring(7)` strips
   the `file://` prefix.
-- `createNewVolume` opens the new file right after starting the copy, without
-  waiting for it to finish. It works in practice because `cp` of a small
-  template is faster than Xournal++ starting up.
+- `createNewVolume` only opens the new file once `cp` has exited
+  successfully; otherwise it logs a warning.
+- `lookupTemplate` strips a trailing `.xopp` from the template name and uses
+  `"default"` for an empty one.
 
 ---
 

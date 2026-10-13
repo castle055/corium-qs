@@ -226,6 +226,33 @@ string (invisible in some editors); newer ones use
 `String.fromCodePoint(0xF….)`, which is easier to read and search for.
 Look codepoints up at <https://www.nerdfonts.com/cheat-sheet>.
 
-Small one-off controls (buttons, chips, toggles) are defined as inline
-`component Foo: Rectangle { … }` at the bottom of the file that uses them,
-not shared. Copy from a neighbouring file when you need one.
+### Shared controls
+
+Controls used by more than one popup live in
+[`widgets/utils/`](../widgets/utils). Use them rather than drawing new ones, so
+every popup looks and behaves the same:
+
+| Component | What it is | Main properties |
+| --- | --- | --- |
+| [`ActionButton`](../widgets/utils/ActionButton.qml) | Labelled 44 px button | `text`, `primary` (accent fill), `danger` (red); signal `clicked` |
+| [`Chip`](../widgets/utils/Chip.qml) | Selectable button for filters, sort orders, presets | `text`, `selected`, `textSize`, `idleColor` (use `#262626` on `#1c1c1c` cards); signal `clicked` |
+| [`IconButton`](../widgets/utils/IconButton.qml) | Round, borderless glyph button | `text`, `textSize`; signal `clicked` |
+| [`Toggle`](../widgets/utils/Toggle.qml) | On/off switch | `checked`; signal `toggled` (it doesn't flip `checked` itself) |
+| [`InputField`](../widgets/utils/InputField.qml) | Text field (search, filter, name, form input) | everything from `TextField` |
+| [`PasswordField`](../widgets/utils/PasswordField.qml) | `InputField` with hidden text and a show/hide eye | `revealed` |
+| [`TabSwitcher`](../widgets/utils/TabSwitcher.qml) | Row of equal tabs for switching popup pages | `model: [{ value, label }]`, `current`; signal `activated(value)` |
+| [`FillSlider`](../widgets/utils/FillSlider.qml) | Thick slider whose whole track is the handle | `icon`, `label`, plus `Slider`'s |
+
+Import them with `import "utils"` from `widgets/`, or `import "../utils"` from
+its subfolders. `TabSwitcher` isn't called `TabBar` because that name is
+taken by `QtQuick.Controls`; avoid Controls' names (`Switch`, `RoundButton`,
+`TextField`, …) for new files here too.
+
+Controls that only one widget uses stay as inline `component Foo: … { … }`
+at the bottom of that file (e.g. Battery's `ProfileButton`, the stopwatch's
+`RoundButton`, the timer's `HoldButton`, Wi-Fi's `LinkText`). Move one to
+`utils/` once a second widget needs it.
+
+Inside a `Repeater` delegate, size items from the container's `id`
+(`(row.width - spacing) / 2`), not from `parent.width`. While a delegate is
+being created its `parent` is briefly null, which logs a `TypeError`.
