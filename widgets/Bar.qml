@@ -84,10 +84,11 @@ Scope {
                     Battery {
                         Layout.fillHeight: true
                     }
+                    SysMonitor {
+                        Layout.fillHeight: true
+                        screen: bar.screen
+                    }
                 }
-                //SysMonitor {
-                //    Layout.fillHeight: true
-                //}
 
                 SysTray {
                     Layout.fillHeight: true

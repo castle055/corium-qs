@@ -4,3 +4,4 @@ singleton Iwd 1.0 Iwd.qml
 singleton CalendarEvents 1.0 CalendarEvents.qml
 singleton Timers 1.0 Timers.qml
 singleton Stopwatch 1.0 Stopwatch.qml
+singleton SystemStats 1.0 SystemStats.qml
