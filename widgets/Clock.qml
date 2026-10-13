@@ -15,7 +15,7 @@ BarPopupButton {
     // The timers page has a name field.
     keyboardFocus: true
 
-    // Which page the popup shows: "calendar" or "timers". Kept between openings.
+    // Which page the popup shows: "calendar", "timers" or "stopwatch". Kept between openings.
     property string page: "calendar"
 
     // Kept fresh while the popup is open, so the header and "today" stay correct.
@@ -236,6 +236,7 @@ BarPopupButton {
                         model: [
                             { page: "calendar", label: "Calendar", icon: 0xF00ED },
                             { page: "timers", label: "Timers", icon: 0xF13AB },
+                            { page: "stopwatch", label: "Stopwatch", icon: 0xF051B },
                         ]
 
                         delegate: Rectangle {
@@ -244,7 +245,7 @@ BarPopupButton {
                             required property var modelData
                             readonly property bool current: root.page === modelData.page
 
-                            width: parent.width / 2
+                            width: parent.width / 3
                             height: parent.height
                             radius: 9
                             color: current ? "#353535" : tabMouse.pressed ? "#262626" : "transparent"
@@ -274,6 +275,12 @@ BarPopupButton {
             TimersPage {
                 width: parent.width
                 visible: root.page === "timers"
+            }
+
+            StopwatchPage {
+                width: parent.width
+                visible: root.page === "stopwatch"
+                active: root.popupVisible && visible
             }
 
             Column {
