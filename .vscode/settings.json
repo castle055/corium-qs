@@ -1,3 +1,4 @@
 {
-    "qt-qml.qmlls.useQmlImportPathEnvVar": true
+    "qt-qml.qmlls.useQmlImportPathEnvVar": true,
+    "cmake.sourceDirectory": "/home/castle/.config/quickshell/corium/helpers"
 }
