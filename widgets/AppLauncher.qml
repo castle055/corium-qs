@@ -13,6 +13,8 @@ BarPopupButton {
 
     leftSide: true
     fullHeight: true
+    // Let the search field take keyboard focus, including from the on-screen keyboard.
+    keyboardFocus: true
 
     property var screen
 
