@@ -45,20 +45,32 @@ Most popups have large controls so they're usable by touch.
 It assumes an Arch-like system running Hyprland, and calls a number of programs
 directly:
 
-- Quickshell, Hyprland (`hyprctl`)
-- iwd, `busctl`, `gdbus`, `iwctl`, `rfkill`, `pkexec` (Wi-Fi)
+- Quickshell, and Hyprland with its Lua config (the bar sends `hl.dsp.*`
+  dispatches)
+- coreutils, findutils, util-linux and procps-ng (`sh`, `cat`, `ps`, `kill`,
+  `pkill`, ...)
+- Wi-Fi: iwd, `busctl` (systemd), `gdbus` (glib2), `iwctl`, `rfkill`; for
+  802.1X/eduroam also `pkexec` with a running polkit agent (e.g.
+  `hyprpolkitagent`) and `openssl`
 - `brightnessctl`
 - PipeWire (audio, and `pw-play` for the timer alarm)
-- UPower (battery)
-- systemd / `journalctl` (services page)
-- Xournal++ (notebooks)
-- `wvkbd` (`wvkbd-deskintl`) for the on-screen keyboard
+- UPower (battery) and power-profiles-daemon (power profile buttons)
+- `notify-send` and a notification daemon (timer notifications)
+- systemd: `systemctl` and `journalctl` (services page)
+- Xournal++ including `xournalpp-thumbnailer`, poppler (`pdftoppm`, `pdfinfo`),
+  `gzip` and `xmllint` (libxml2) for the notebooks
+- `wvkbd` (`wvkbd-deskintl`), already running, for the on-screen keyboard
 - A `screenshot` command on your `PATH` (my own script, not included)
 - A Nerd Font for the icons
 - For the calendar: KOrganizer/Akonadi and the `corium-calendar` helper (see below)
 
+The full list of programs and files it uses is in
+[`docs/system-integration.md`](docs/system-integration.md).
+
 Some things are hardcoded for my setup, e.g. the notebook folder is
-`~/Notes/Notebooks` in `widgets/NotebookLauncher.qml`.
+`~/Notes/Notebooks` in `widgets/NotebookLauncher.qml`. The open-notebook tabs
+also rely on a rule in my Hyprland config that moves every Xournal++ window to
+its own `doc:` workspace (see [`docs/notebooks.md`](docs/notebooks.md)).
 
 ## Running it
 
@@ -77,9 +89,23 @@ first. Building it and what it does are described in
 ```
 shell.qml        entry point
 widgets/         the bar and everything in it (popups, pages, small shared controls)
-services/        singletons that hold state or talk to the system (iwd, Hyprland, timers, ...)
+services/        singletons that hold state or talk to the system (iwd, timers, notebooks, ...)
 helpers/         native helper programs (currently just corium-calendar)
+docs/            documentation
 ```
+
+## Documentation
+
+How it all works, for when something needs changing, is in [`docs/`](docs/README.md):
+
+- [Architecture](docs/architecture.md): how the bar, popups and services fit together
+- [Bar widgets](docs/bar-widgets.md): each item in the bar and its popup
+- [Services](docs/services.md): the singletons in `services/`
+- [Notebooks](docs/notebooks.md): notebook folders, templates, thumbnails and tabs
+- [Wi-Fi](docs/wifi.md): the iwd integration, including 802.1X/eduroam
+- [Calendar](docs/calendar.md): the `corium-calendar` helper and its protocol
+- [System integration](docs/system-integration.md): external programs, files and Hyprland config it depends on
+- [Development](docs/development.md): running, debugging, adding widgets, known rough edges
 
 ## License
 
