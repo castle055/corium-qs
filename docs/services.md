@@ -3,13 +3,14 @@
 Singletons in [`services/`](../services), registered in
 [`services/qmldir`](../services/qmldir). Each section lists what the service
 exposes and how it gets its data. The two large ones have their own pages:
-[Iwd → wifi.md](wifi.md), [CalendarEvents → calendar.md](calendar.md).
+[Iwd and Rfkill → connectivity.md](connectivity.md), [CalendarEvents → calendar.md](calendar.md).
 
 | Service | Used by | Persists to |
 | --- | --- | --- |
 | [`LauncherState`](#launcherstate) | AppLauncher | `launcher.json` |
 | [`Xournalpp`](#xournalpp) | notebook components | — (cache only) |
-| [`Iwd`](#iwd) | Wifi | — (iwd's own storage) |
+| [`Iwd`](#iwd) | Connectivity (WifiPage) | — (iwd's own storage) |
+| [`Rfkill`](#rfkill) | Connectivity, BluetoothPage | `airplane.json` |
 | [`CalendarEvents`](#calendarevents) | Clock | — |
 | [`Timers`](#timers) | Clock, TimersPage | `timers.json` |
 | [`Stopwatch`](#stopwatch) | StopwatchPage | `stopwatch.json` |
@@ -76,7 +77,28 @@ Implementation notes:
 ## Iwd
 
 [`services/Iwd.qml`](../services/Iwd.qml) — Wi-Fi through iwd's D-Bus API.
-See [wifi.md](wifi.md).
+See [connectivity.md](connectivity.md#wi-fi-iwd).
+
+---
+
+## Rfkill
+
+[`services/Rfkill.qml`](../services/Rfkill.qml) — radio kill switches. See
+[connectivity.md](connectivity.md#airplane-mode-rfkill).
+
+```
+devices: [{ id, type, device, soft, hard }]   from rfkill -J, live via rfkill event
+available                                      there is a Wi-Fi or Bluetooth radio
+airplaneMode                                   every Wi-Fi and Bluetooth radio is blocked
+hardBlocked                                    a hardware switch is off
+blocked(type)
+radiosBeforeAirplane                           { wlan, bluetooth } that were on, or null
+setAirplaneMode(on, cb)                        block all / unblock what was on; cb(ok, message)
+unblock(type, cb)
+```
+
+Bluetooth has no service of its own: Quickshell's `Quickshell.Bluetooth`
+already exposes BlueZ as live objects.
 
 ---
 

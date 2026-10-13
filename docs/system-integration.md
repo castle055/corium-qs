@@ -14,7 +14,10 @@ silently stops working after a system update or on a new machine.
 | `busctl` | systemd | Iwd | Wi-Fi state |
 | `gdbus` | glib2 | Iwd | Wi-Fi actions and live updates |
 | `iwctl` (and `iwd` running) | iwd | Iwd | connecting with a new password |
-| `rfkill` | util-linux | Iwd | turning Wi-Fi on when soft-blocked |
+| `rfkill` | util-linux | Iwd, Rfkill | turning Wi-Fi on when soft-blocked, airplane mode |
+| `ip` | iproute2 | Iwd | Wi-Fi connection details (addresses, gateway) |
+| `resolvectl` | systemd | Iwd | Wi-Fi connection details (DNS) |
+| BlueZ (via `Quickshell.Bluetooth`; `bluetooth.service` running) | bluez | BluetoothPage | Bluetooth tab |
 | `pkexec` + a polkit agent (e.g. `hyprpolkitagent`) | polkit | Iwd | saving 802.1X networks |
 | `openssl` | openssl | Iwd | 802.1X with a CA certificate file |
 | `brightnessctl` | brightnessctl | Brightness | brightness |
@@ -57,6 +60,7 @@ workspace data come from Quickshell's built-in integrations.
 | `~/.local/state/quickshell/by-shell/<hash>/launcher.json` | LauncherState |
 | `~/.local/state/quickshell/by-shell/<hash>/timers.json` | Timers |
 | `~/.local/state/quickshell/by-shell/<hash>/stopwatch.json` | Stopwatch |
+| `~/.local/state/quickshell/by-shell/<hash>/airplane.json` | Rfkill (radios to turn back on after airplane mode) |
 | `~/.cache/quickshell/corium/notebook-thumbnails/*.png` | Xournalpp |
 | `~/.cache/quickshell/corium/ca-<ssidhex>.pem` | Iwd (staging) |
 | `/var/lib/iwd/<ssid>.8021x`, `/var/lib/iwd/certs/<ssidhex>.pem` | Iwd via pkexec |

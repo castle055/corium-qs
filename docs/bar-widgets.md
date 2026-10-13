@@ -92,11 +92,13 @@ anything visible.
 
 ---
 
-## Wi-Fi
+## Connectivity
 
-[`widgets/Wifi.qml`](../widgets/Wifi.qml) — the UI for
-[`services/Iwd.qml`](../services/Iwd.qml). Big enough to have its own page:
-[wifi.md](wifi.md).
+[`widgets/Connectivity.qml`](../widgets/Connectivity.qml) plus
+[`widgets/connectivity/`](../widgets/connectivity). Wi-Fi and Bluetooth icons
+in the bar (an airplane in airplane mode); the popup has an airplane mode
+toggle and Wi-Fi / Bluetooth tabs. Big enough to have its own page:
+[connectivity.md](connectivity.md).
 
 ---
 

@@ -146,6 +146,12 @@ these are fixed yet.
 - **Wi-Fi says "iwd is not running":** `busctl call net.connman.iwd /
   org.freedesktop.DBus.ObjectManager GetManagedObjects` must work for your
   user.
+- **Bluetooth tab says it can't reach BlueZ:** `systemctl status bluetooth`;
+  install `bluez` and `systemctl enable --now bluetooth` if it's missing. If
+  BlueZ is running, restart Quickshell: it only connects to BlueZ at startup
+  (see [connectivity.md](connectivity.md#bluetooth)).
+- **Airplane mode toggle does nothing:** `rfkill block all` must work without
+  sudo (`getfacl /dev/rfkill` should list your user).
 - **No calendar events:** is `helpers/build/calendar/corium-calendar`
   there? Does `corium-calendar list <from> <to>` print events? Are the
   calendars ticked in KOrganizer? Is Akonadi running (`akonadictl status`)?

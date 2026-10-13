@@ -31,7 +31,9 @@ From left to right:
 - **Open notebooks**: notebooks open in Xournal++, each kept in its own
   `doc:` special workspace.
 - **Screenshot** and **on-screen keyboard** toggle buttons.
-- **Wi-Fi**: network list, connecting (including 802.1X/eduroam) through iwd.
+- **Connectivity**: Wi-Fi (network list, connecting including 802.1X/eduroam,
+  connection details) through iwd, Bluetooth devices through BlueZ, and an
+  airplane mode toggle.
 - **Brightness**, **audio** (volume and mute) and **battery**.
 - **System monitor**: CPU, memory and swap bars, with graphs, a process list
   and a page for managing `systemd --user` services.
@@ -51,7 +53,9 @@ directly:
   `pkill`, ...)
 - Wi-Fi: iwd, `busctl` (systemd), `gdbus` (glib2), `iwctl`, `rfkill`; for
   802.1X/eduroam also `pkexec` with a running polkit agent (e.g.
-  `hyprpolkitagent`) and `openssl`
+  `hyprpolkitagent`) and `openssl`; `ip` (iproute2) and `resolvectl` for the
+  connection details
+- Bluetooth: BlueZ (`bluez`, with `bluetooth.service` running)
 - `brightnessctl`
 - PipeWire (audio, and `pw-play` for the timer alarm)
 - UPower (battery) and power-profiles-daemon (power profile buttons)
@@ -102,7 +106,7 @@ How it all works, for when something needs changing, is in [`docs/`](docs/README
 - [Bar widgets](docs/bar-widgets.md): each item in the bar and its popup
 - [Services](docs/services.md): the singletons in `services/`
 - [Notebooks](docs/notebooks.md): notebook folders, templates, thumbnails and tabs
-- [Wi-Fi](docs/wifi.md): the iwd integration, including 802.1X/eduroam
+- [Connectivity](docs/connectivity.md): Wi-Fi through iwd (including 802.1X/eduroam), Bluetooth, airplane mode
 - [Calendar](docs/calendar.md): the `corium-calendar` helper and its protocol
 - [System integration](docs/system-integration.md): external programs, files and Hyprland config it depends on
 - [Development](docs/development.md): running, debugging, adding widgets, known rough edges

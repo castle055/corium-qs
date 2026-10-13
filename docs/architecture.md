@@ -44,7 +44,7 @@ shell.qml (Scope)
             ├─ Workspaces
             ├─ OpenNotebooks        (fills remaining width)
             ├─ ScreenshotTool, OnScreenKeyboardToggle
-            ├─ Wifi, Brightness, Audio, Battery, SysMonitor   (BarPopupButtons)
+            ├─ Connectivity, Brightness, Audio, Battery, SysMonitor   (BarPopupButtons)
             ├─ SysTray
             └─ Clock                (BarPopupButton)
 ```
@@ -189,9 +189,9 @@ certificates).
 ### Refresh only while visible
 
 Expensive pages take an `active` property (`popupVisible && visible`) and only
-run their timers while it's true: ProcessesPage, ServicesPage, StopwatchPage.
-The clock's "now" timer and the Wi-Fi rescans also only run while the popup is
-open.
+run their timers while it's true: ProcessesPage, ServicesPage, StopwatchPage,
+WifiPage (rescans) and BluetoothPage (device discovery). The clock's "now"
+timer also only runs while the popup is open.
 
 ### Touch-first UI
 

@@ -12,7 +12,7 @@ run it; these pages explain how it works.
 | Change or fix something in a specific bar item | [bar-widgets.md](bar-widgets.md) |
 | Change how state is read from the system (timers, stats, launcher, …) | [services.md](services.md) |
 | Touch the notebook launcher, thumbnails, templates or the open-notebook tabs | [notebooks.md](notebooks.md) |
-| Touch Wi-Fi, especially eduroam / 802.1X | [wifi.md](wifi.md) |
+| Touch Wi-Fi (especially eduroam / 802.1X), Bluetooth or airplane mode | [connectivity.md](connectivity.md) |
 | Touch the calendar or the `corium-calendar` C++ helper | [calendar.md](calendar.md) |
 | Know which programs, files and config outside this repo it depends on | [system-integration.md](system-integration.md) |
 | Run, debug, add a widget, or check the known rough edges | [development.md](development.md) |
@@ -50,7 +50,7 @@ widgets/
   OpenNotebooks.qml           tabs for open Xournal++ windows (doc:* workspaces)
   ScreenshotTool.qml          runs `screenshot`
   OnScreenKeyboardToggle.qml  toggles wvkbd
-  Wifi.qml                    Wi-Fi popup (uses services/Iwd.qml)
+  Connectivity.qml            Wi-Fi + Bluetooth icons; popup with airplane mode and both tabs
   Brightness.qml              brightness popup (brightnessctl)
   Audio.qml                   volume / mute / output popup (PipeWire)
   Battery.qml                 battery + power profile popup (UPower)
@@ -58,6 +58,7 @@ widgets/
   SysTray.qml                 StatusNotifier tray
   Clock.qml                   clock; popup with calendar, timers, stopwatch
   Time.qml                    singleton: the "HH : MM" string shown in the bar
+  connectivity/               Wi-Fi and Bluetooth pages of the connectivity popup
   notebooks/                  notebook browser components
   sysmon/                     system monitor pages and the graph
   timers/                     timers and stopwatch pages of the clock popup
@@ -68,6 +69,7 @@ services/
   qmldir                      registers the singletons below
   CalendarEvents.qml          talks to the corium-calendar helper
   Iwd.qml                     Wi-Fi via iwd's D-Bus API
+  Rfkill.qml                  radio kill switches and airplane mode
   LauncherState.qml           launcher favourites / recents (persisted)
   Timers.qml                  countdown timers (persisted)
   Stopwatch.qml               stopwatch (persisted)
