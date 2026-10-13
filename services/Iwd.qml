@@ -312,6 +312,77 @@ Singleton {
         call(network.knownPath, "net.connman.iwd.KnownNetwork", "Forget", [], 15, callback)
     }
 
+    /*
+     * Details of the current connection, for the connected network's page.
+     * callback(info) with info = {
+     *   ipv4, ipv6: [], gateway, dns: [], mac,       // from ip / resolvectl
+     *   frequency (MHz), channel, standard, security, txRate, rxRate (Mbit/s)   // from iwd
+     * }; fields that couldn't be read are missing.
+     */
+    function connectionInfo(callback) {
+        if (deviceName === "" || stationPath === "") {
+            callback({})
+            return
+        }
+
+        const script = 'ip -j addr show dev "$1"; echo ===\n'
+            + 'ip -j route show default dev "$1"; echo ===\n'
+            + 'resolvectl dns "$1" 2>/dev/null\n'
+
+        run(["sh", "-c", script, "corium-ip", deviceName], (exitCode, stdout, stderr) => {
+            const info = {}
+            const [addrJson, routeJson, dnsText] = stdout.split("===\n")
+            try {
+                const link = JSON.parse(addrJson)[0]
+                info.mac = link.address
+                const addresses = link.addr_info ?? []
+                const ipv4 = addresses.find(a => a.family === "inet")
+                if (ipv4)
+                    info.ipv4 = ipv4.local + "/" + ipv4.prefixlen
+                info.ipv6 = addresses.filter(a => a.family === "inet6" && a.scope === "global")
+                                     .map(a => a.local)
+            } catch (e) {}
+            try {
+                info.gateway = JSON.parse(routeJson)[0]?.gateway
+            } catch (e) {}
+            // "Link 3 (wlan0): 192.168.1.1 9.9.9.9#dns.quad9.net"
+            const dns = /:\s*(.*)$/.exec((dnsText ?? "").trim())
+            if (dns && dns[1] !== "")
+                info.dns = dns[1].split(/\s+/).map(server => server.replace(/#.*/, ""))
+
+            run(["busctl", "--json=short", "call", service, stationPath,
+                 "net.connman.iwd.StationDiagnostic", "GetDiagnostics"],
+                (exitCode, stdout, stderr) => {
+                    try {
+                        const d = JSON.parse(stdout).data[0]
+                        info.frequency = value(d.Frequency)
+                        info.channel = value(d.Channel)
+                        info.security = value(d.Security)
+                        info.standard = wifiStandard(value(d.RxMode) ?? value(d.TxMode), info.frequency)
+                        // Bitrates are in units of 100 kbit/s.
+                        if (d.TxBitrate)
+                            info.txRate = Math.round(value(d.TxBitrate) / 10)
+                        if (d.RxBitrate)
+                            info.rxRate = Math.round(value(d.RxBitrate) / 10)
+                    } catch (e) {}
+                    callback(info)
+                })
+        })
+    }
+
+    // "802.11ax" -> "Wi-Fi 6 (802.11ax)"
+    function wifiStandard(mode, frequency) {
+        if (!mode)
+            return undefined
+        const generation = {
+            "802.11n": "Wi-Fi 4",
+            "802.11ac": "Wi-Fi 5",
+            "802.11ax": frequency > 5925 ? "Wi-Fi 6E" : "Wi-Fi 6",
+            "802.11be": "Wi-Fi 7"
+        }[mode]
+        return generation ? generation + " (" + mode + ")" : mode
+    }
+
     // ------------------------------------------------------------------
     // Enterprise (802.1X) provisioning
     // ------------------------------------------------------------------
