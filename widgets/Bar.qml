@@ -72,6 +72,9 @@ Scope {
                 }
 
                 RowLayout {
+                    Wifi {
+                        Layout.fillHeight: true
+                    }
                     Brightness {
                         Layout.fillHeight: true
                     }
