@@ -84,26 +84,66 @@ BarPopupButton {
 
             // Volume
 
-            FillSlider {
-                id: volumeSlider
-
+            Row {
                 width: parent.width
+                spacing: 10
 
-                from: 0
-                to: 1
+                // Mute toggle, as tall as the slider so it's as easy to hit.
+                Rectangle {
+                    id: muteButton
 
-                value: root.sink && root.sink.audio
-                ? root.sink.audio.volume
-                : 0
+                    readonly property bool muted: !!(root.sink && root.sink.audio && root.sink.audio.muted)
 
-                icon: root.sink && root.sink.audio && root.sink.audio.muted ? "󰖁" : "󰕾"
-                label: root.sink && root.sink.audio
-                ? Math.round(value * 100) + "%"
-                : "--"
+                    width: volumeSlider.height
+                    height: volumeSlider.height
+                    radius: height / 2
 
-                onMoved: {
-                    if (root.sink && root.sink.audio)
-                    root.sink.audio.volume = value
+                    color: muteMouse.pressed
+                           ? "#505050"
+                           : muted ? "#4a2626" : "#404040"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: muteButton.muted ? "󰖁" : "󰕾"
+                        color: muteButton.muted ? "#ff7777" : "white"
+                        font.pixelSize: 18
+                    }
+
+                    MouseArea {
+                        id: muteMouse
+
+                        anchors.fill: parent
+                        onClicked: {
+                            if (root.sink && root.sink.audio)
+                                root.sink.audio.muted = !root.sink.audio.muted
+                        }
+                    }
+                }
+
+                FillSlider {
+                    id: volumeSlider
+
+                    width: parent.width - muteButton.width - parent.spacing
+
+                    from: 0
+                    to: 1
+
+                    // Dimmed while muted; moving it still sets the volume.
+                    opacity: muteButton.muted ? 0.5 : 1
+
+                    value: root.sink && root.sink.audio
+                    ? root.sink.audio.volume
+                    : 0
+
+                    icon: muteButton.muted ? "󰖁" : "󰕾"
+                    label: root.sink && root.sink.audio
+                    ? Math.round(value * 100) + "%"
+                    : "--"
+
+                    onMoved: {
+                        if (root.sink && root.sink.audio)
+                        root.sink.audio.volume = value
+                    }
                 }
             }
 
